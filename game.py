@@ -48,8 +48,7 @@ class Meld(list):
           self.rank = self[0].rank
           self.suit = sorted([card.suit for card in self])[-1]
       else:
-        self.sort()
-        level = len(self.fives)
+        level = len(self.fives) - 1
         for five in self.fives:
           result = five()
           if result != False:
@@ -59,6 +58,7 @@ class Meld(list):
           level -= 1
         if self.rank == None and self.suit == None:
           self.isValid = False
+          level = None
 
   def straight(self):
     first = self[0]
@@ -95,6 +95,17 @@ class Meld(list):
   def isLegal(self, trick):
     return self.size == trick.size and self > trick
 
+  def breaking(self, melds):
+    breaks = []
+    for meld in melds:
+      if self == meld: continue
+      if self.size >= meld.size: continue
+      for card in self:
+        if card in meld:
+          breaks.append(len(meld))
+          break
+    return breaks
+
   def strings(self):
     return toStrings(self)
 
@@ -115,7 +126,7 @@ class Meld(list):
       if fives[self.level] == "straight" or fives[self.level] == "straightFlush":
         return self.toTuple() < other.toTuple()
       elif fives[self.level] == "flush":
-        return self.suit < other.suit
+        return self.toTuple()[::-1] < other.toTuple()[::-1]
       elif fives[self.level] == "fullHouse" or fives[self.level] == "four":
         return self.rank < other.rank
 
